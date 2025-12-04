@@ -293,36 +293,7 @@ class SoftmaxLoss(FunObj):
         return f, g
 
 
-class PCAFeaturesLoss(FunObj):
-    """
-    Evaluates PCA objective function and its gradient with Z, the learned features
-    """
 
-    def evaluate(self, z, W, X):
-        n, d = X.shape
-        k, _ = W.shape
-        Z = z.reshape(n, k)
-
-        R = Z @ W - X
-        f = np.sum(R ** 2) / 2
-        g = R @ W.T
-        return f, g.flatten()
-
-
-class PCAFactorsLoss(FunObj):
-    """
-    Evaluates PCA objective function and its gradient with W, the learned features
-    """
-
-    def evaluate(self, w, Z, X):
-        n, d = X.shape
-        _, k = Z.shape
-        W = w.reshape(k, d)
-
-        R = Z @ W - X
-        f = np.sum(R ** 2) / 2
-        g = Z.T @ R
-        return f, g.flatten()
 
 
 class CollaborativeFilteringZLoss(FunObj):
@@ -343,13 +314,54 @@ class CollaborativeFilteringWLoss(FunObj):
         pass
 
 
+class PCAFeaturesLoss(FunObj):
+    """
+    Evaluates PCA objective function and its gradient with Z, the learned features
+    """
+
+    def evaluate(self, z, W, X):
+        n, d = X.shape
+        k, _ = W.shape
+        Z = z.reshape(n, k)
+
+        R = Z @ W - X
+        f = np.sum(R ** 2) / 2
+        g = R @ W.T
+        return f, g.flatten()
+
 class RobustPCAFeaturesLoss(FunObj):
     def __init__(self, epsilon):
         self.epsilon = epsilon
 
     
     def evaluate(self, z, W, X):
-        pass
+        n, d = X.shape
+        k, _ = W.shape
+        Z = z.reshape(n, k)
+
+        R = Z @ W - X
+        f = np.sqrt(np.sum(R ** 2) + self.epsilon)
+
+        g = (R / (R**2 + self.epsilon)**(0.5)) @ W.T
+
+        return f, g.flatten()
+    
+
+
+class PCAFactorsLoss(FunObj):
+    """
+    Evaluates PCA objective function and its gradient with W, the learned features
+    """
+
+    def evaluate(self, w, Z, X):
+        n, d = X.shape
+        _, k = Z.shape
+        W = w.reshape(k, d)
+
+        R = Z @ W - X
+        f = np.sum(R ** 2) / 2
+        g = Z.T @ R
+        return f, g.flatten()
 
 
 class RobustPCAFactorsLoss(FunObj):
@@ -357,7 +369,17 @@ class RobustPCAFactorsLoss(FunObj):
         self.epsilon = epsilon
 
     def evaluate(self, w, Z, X):
-        pass
+        n, d = X.shape
+        _, k = Z.shape
+        W = w.reshape(k, d)
+
+        R = Z @ W - X
+        f = np.sqrt(np.sum(R ** 2) + self.epsilon)
+
+        g = Z.T @ (R / (R**2 + self.epsilon)**(0.5))
+
+
+        return f, g.flatten()
 
 
 class MLPLoss(FunObj):  # (friendship is magic)
