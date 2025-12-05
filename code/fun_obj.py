@@ -302,8 +302,20 @@ class CollaborativeFilteringZLoss(FunObj):
         self.lammyW = lammyW
 
     def evaluate(self, z, W, Y):
-        pass
+        n, d = Y.shape
+        k, _ = W.shape
+        Z = z.reshape(n, k)
 
+        R = Z @ W - Y
+        R = np.nan_to_num(R)
+
+        f = np.sum(R ** 2) / 2
+        g = R @ W.T
+
+        f += 0.5 * self.lammyZ * np.sum(Z**2)
+        g += self.lammyZ * Z
+
+        return f, g.flatten()
 
 class CollaborativeFilteringWLoss(FunObj):
     def __init__(self, lammyZ=1, lammyW=1):
@@ -311,8 +323,22 @@ class CollaborativeFilteringWLoss(FunObj):
         self.lammyW = lammyW
 
     def evaluate(self, w, Z, Y):
-        pass
+        n, d = Y.shape
+        _, k = Z.shape
+        W = w.reshape(k, d)
 
+        R = Z @ W - Y
+
+        R = np.nan_to_num(R)
+
+        f = np.sum(R ** 2) / 2
+        g = Z.T @ R
+
+        # add L2 regularization
+        f += 0.5 * self.lammyW * np.sum(W ** 2)
+        g += self.lammyW * W
+
+        return f, g.flatten()
 
 class PCAFeaturesLoss(FunObj):
     """

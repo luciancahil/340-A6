@@ -270,9 +270,10 @@ def q2_3():
 
     avg_rating = np.nanmean(Y_train)
 
-    k = 50
-    fun_obj_w = CollaborativeFilteringWLoss(lammyZ=1, lammyW=1)
-    fun_obj_z = CollaborativeFilteringZLoss(lammyZ=1, lammyW=1)
+    k = 40
+    master_lammy = 5
+    fun_obj_w = CollaborativeFilteringWLoss(lammyZ=master_lammy, lammyW=master_lammy)
+    fun_obj_z = CollaborativeFilteringZLoss(lammyZ=master_lammy, lammyW=master_lammy)
 
     optimizer_w = GradientDescentLineSearch(max_evals=100, verbose=False)
     optimizer_z = GradientDescentLineSearch(max_evals=100, verbose=False)
